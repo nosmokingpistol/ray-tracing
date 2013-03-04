@@ -123,8 +123,11 @@ void Camera::generateRay(Sample &sample, Ray* ray){
     // R(t) = E + t(P-E)
     ray->pos = eye_pos;
     // x = tan(fovx/2)((x - width/2 )) / width/2
-    Vector3f x = U*(sample.x-(width/2.0));
-    Vector3f y = V*((height/2.0)-sample.y);
+    float scalar = 2.0*tan(fov_y/2);
+    Vector3f Xinc = scalar/width*U;
+    Vector3f Yinc = scalar/height*V;
+    Vector3f x = (sample.y-(height/2))*Yinc;
+    Vector3f y = (sample.x-(width/2))*Xinc;
     Vector3f pixel = x + y;    
 
     ray->dir = (pixel + N);
