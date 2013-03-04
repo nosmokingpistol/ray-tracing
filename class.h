@@ -142,7 +142,7 @@ class RayTracer
         void trace(Ray& ray, int depth, Vector3f* color);
 };
 
-class Triangle
+class Triangle : public Primitive
 {
     public:
     Vector3f A, B, C;
