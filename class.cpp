@@ -126,8 +126,8 @@ void Camera::generateRay(Sample &sample, Ray* ray){
     float scalar = 2.0*tan(fov_y/2);
     Vector3f Xinc = scalar/width*U;
     Vector3f Yinc = scalar/height*V;
-    Vector3f x = (sample.y-(height/2))*Yinc;
-    Vector3f y = (sample.x-(width/2))*Xinc;
+    Vector3f y = (sample.y-(height/2))*Yinc;
+    Vector3f x = (sample.x-(width/2))*Xinc;
     Vector3f pixel = x + y;    
 
     ray->dir = (pixel + N);
@@ -167,61 +167,34 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         }
     }
 
+// http://www.cs.washington.edu/education/courses/cse457/07sp/lectures/triangle_intersection.pdf
+
 bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& normal) {
     // plane: (P0 + P1t ) * n = A*n    
     // t = (A*n - P0*N)/P1*N
-    // t = (Vector(A,P)*N )/(ray.dir*N);
-    float t = (intersect - A).dot(N) / ray.dir.dot(N);
-    // float t = dot_product(Vector(A,intersect), N)/dot_product(ray.dir, N);
-    
-    // Check if is inside triangle
-    // Use www .cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld018.htm
-    // Vector v_1_ab = Vector(ray.pos,A);
-    // Vector v_2_ab = Vector(ray.pos,B);
-    // Vector N_ab = normalize(vector_cross_product(v_2_ab, v_1_ab));
-    Vector3f v_1_ab = A - ray.pos;
-    Vector3f v_2_ab = B - ray.pos;
-    Vector3f N_ab = v_2_ab.cross(v_1_ab);
-    N_ab.normalize();
-
-    // Vector v_1_bc = Vector(ray.pos,B);
-    // Vector v_2_bc = Vector(ray.pos,C);
-    // Vector N_bc = normalize(vector_cross_product(v_2_bc, v_1_bc));
-    Vector3f v_1_bc = B - ray.pos;
-    Vector3f v_2_bc = C - ray.pos;
-    Vector3f N_bc = v_2_bc.cross(v_1_bc);
-    N_bc.normalize();
-    
-    // Vector v_1_ca = Vector(ray.pos,C);
-    // Vector v_2_ca = Vector(ray.pos,A);
-    // Vector N_ca = normalize(vector_cross_product(v_2_ca, v_1_ca));
-    Vector3f v_1_ca = C - ray.pos;
-    Vector3f v_2_ca = A - ray.pos;
-    Vector3f N_ca = v_2_ca.cross(v_1_ca);
-    N_ca.normalize();
-    
-    // if ((dot_product(intersect, N_ab) + dot_product(Vector(ray.pos, intersect), N_ab))<0
-    //     && (dot_product(intersect, N_bc) + dot_product(Vector(ray.pos, intersect), N_bc))<0
-    //     && (dot_product(intersect, N_ca) + dot_product(Vector(ray.pos, intersect), N_ca))<0){
-    //     cout <<  " No intersection ";
-    //     return false;
-    // } else {
-    //     Point i = point_vector_add(ray.pos, vector_scalar_multiply(ray.dir, t));
-    //     normal = N;
-    //     intersect = i;
-    //     return true;
-    // }
-
-    if ((intersect.dot(N_ab) + (intersect - ray.pos).dot(N_ab) < 0)
-        && (intersect.dot(N_bc) + (intersect - ray.pos).dot(N_bc) < 0)
-        && (intersect.dot(N_ca) + (intersect - ray.pos).dot(N_ca) < 0)) {
-        std::cout <<  " No intersection ";
+    float t;
+    float d = N.dot(A);
+    if (N.dot(ray.dir) == 0) {
         return false;
+    } else {
+        t = (d - N.dot(ray.pos))/(N.dot(ray.dir));
     }
-    else {
+    std::cout << "t calculated as: " << t << std::endl;
+    intersect = ray.pos + (t*ray.dir);
+    
+    if (((B-A).cross(intersect-A)).dot(N) < 0
+        || ((C-B).cross(intersect-B)).dot(N) < 0
+        || ((A-C).cross(intersect-C)).dot(N) < 0) {
+        std::cout <<  " No intersection " << std::endl;
+        return false;
+    } else {
+        float alpha = ((C-B).cross(intersect-B)).dot(N)/((B-A).cross(C-A)).dot(N);
+        float beta = ((A-C).cross(intersect-C)).dot(N)/((B-A).cross(C-A)).dot(N);
+        float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
+
         normal = N;
         intersect = ray.pos + (ray.dir * t);
         return true;
     }
-
+    return false;
 }

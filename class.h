@@ -151,7 +151,7 @@ class Triangle : public Primitive
         A = a;
         B = b;
         C = c;
-        N = (C-A).cross((B-A));
+        N = (B-A).cross((C-A));
         N.normalize();
     }  
     virtual bool intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal);             
