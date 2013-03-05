@@ -1,9 +1,7 @@
-// #include "util.h"
-// #include <iostream>
-// #include <cmath>
-// #include "FreeImage.h"
 
 #include "class.h"
+#include "common.h"
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 
@@ -12,77 +10,6 @@
 
 using namespace Eigen;
 
-Vector3f convert_to_3d(Vector4f v) { // converts vector by removing w
-    return Vector3f(v(0), v(1), v(2));
-};
-Vector4f convert_to_4d(Vector3f v) {
-     return Vector4f(v(0), v(1), v(2), 1);
-};
-
-
-Matrix4f identity_matrix() {
-    Matrix4f identity = Matrix4f::Identity();
-    return identity;
-};
-
-// TransformMatrix TransformMatrix::translate_matrix(float x, float y, float z) {
-// TransformMatrix translate_matrix(float x, float y, float z) {
-//     TransformMatrix transform = TransformMatrix();
-//     transform.matrix << 1, 0, 0, x,
-//             0, 1, 0, y,
-//             0, 0, 1, z,
-//             0, 0, 0, 1; 
-//     transform.type = 0;
-//     return transform;
-// };
-
-Matrix4f translation_matrix(float x, float y, float z) {
-    Matrix4f transform;
-    transform<< 1, 0, 0, x,
-            0, 1, 0, y,
-            0, 0, 1, z,
-            0, 0, 0, 1; 
-    return transform;
-};
-
-// B^2 - 4AC
-float discriminant(float A, float B, float C) { 
-    return pow(B, 2) - 4*A*C;
-};
-
-// returns a float >= 0, assumes discriminant >= 0
-//(-B +-(B^2 -4AC)) ^ .5   / 2a
-float solve_quadratic(float A, float B, float C) {
-    float dis = discriminant(A, B, C); // B^2 - 4AC
-    // the smaller positive root is the closest intersection point
-    // compute t0 and if it is positive, then we are done, else compute t1
-    float t0 = (-B - sqrt(dis)) / (2*A); 
-    if (t0 >=0) return t0;
-    float t1 = (-B + sqrt(dis)) / (2*A); 
-    return t1;
-};
-
-bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal){
-    // A = dir * dir
-    float A = ray.dir.dot(ray.dir);
-    // B = 2 dir * (pos - center)
-    float B = 2.0 * ray.dir.dot(ray.pos - center);
-    // C =  (pos - center) * (pos - center) - r^2
-    float C = (ray.pos - center).dot(ray.pos - center) - radius*radius;
-    // std::cout << " A = " << A << " B = " << B << " C = " << C << std::endl;
-    if (discriminant(A, B, C) < 0) { // no intersection
-        // std::cout <<  " No intersection " << std::endl << std::endl;
-        return false;
-    }
-    // discriminant >=0,  ray is tangent or intersects in 2 pts
-    float t = solve_quadratic(A, B, C);
-    // Ri = [xi, yi, zi] = [x0 + xd * ti ,  y0 + yd * ti,  z0 + zd * ti]
-    intersect = ray.pos + ray.dir*t;
-    //Unit N at surface SN = [(xi - xc)/Sr,   (yi - yc)/Sr,   (zi - zc)/Sr]
-    normal = (intersect - center)/radius;
-    // std::cout << " intersect point = "<< intersect << " normal = "<< normal<< std::endl;
-    return true;
-}; 
 
 bool Sampler::generateSample(Sample* sample) { 
     if (cur_w == width) {
@@ -135,7 +62,7 @@ Camera::Camera(Vector3f lfrm, Vector3f lat, Vector3f u, float fov, float screen_
     fov_y = fov * PI/180; // store as radians
     width = screen_width;
     height = screen_height;
- 
+
     // W = eye - lookat
     W = (eye_pos - lookat);
     W.normalize();
@@ -165,7 +92,7 @@ void Camera::generateRay(Sample &sample, Ray* ray){
 
     ray->dir = (pixel + N);
     ray->dir.normalize();
-   
+
     // cout << " x = "; x.print (); cout << " y = "; y.print(); cout << endl;
     // std::cout << "ray for sample " << sample.x << ", " << sample.y << " has pos ";
     // ray->pos.print();
@@ -176,30 +103,69 @@ void Camera::generateRay(Sample &sample, Ray* ray){
 
 void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         // for each object, determine closet object of intersection
-        std::vector<Primitive*>::iterator itr;
-        Vector3f normal;
-        Vector3f intersect;
-        float thit;
-        for(itr = primitives.begin(); itr != primitives.end(); ++itr) {
+    std::vector<Primitive*>::iterator itr;
+    Vector3f normal;
+    Vector3f intersect;
+    float thit;
+    for(itr = primitives.begin(); itr != primitives.end(); ++itr) {
             // std::cout<< " ****looping" << std::endl;
-            Primitive& cur_prim = **itr;
-            cur_prim.transform.transform_ray(ray);
+        Primitive& cur_prim = **itr;
+        cur_prim.transform.transform_ray(ray);
             // cur_prim.print();  
-            if (cur_prim.intersect(ray, &thit, intersect, normal)) {
+        if (cur_prim.intersect(ray, &thit, intersect, normal)) {
                 // std::cout << " setting color to red!!" << std::endl;
-                *color = Vector3f(100, 0, 0);
+            *color = Vector3f(100, 0, 0);
                 // std::cout << "intersection: t = " << thit << " intersect point = ";
                 // intersect.print();
                 // std::cout << "normal = ";
                 // std::cout << std::endl;
-            }
-            else {// no primitive intersection
-                *color = Vector3f(0, 0, 0);
+        }
+        else {// no primitive intersection
+            *color = Vector3f(0, 0, 0);
                                       // cout << " BLACK!!" << endl;
-                                  }
-
         }
     }
+}
+
+
+
+    void Scene::render() {
+        Sampler sampler = Sampler(width, height);
+        Sample sample;
+        Film film = Film("test1.png", width, height);
+        RGBQUAD image_color;
+        Vector3f color;
+        Ray ray;
+        while (sampler.generateSample(&sample)) {
+         // cout << "sample = " << sample.x << " " << sample.y << endl;
+            camera.generateRay(sample, &ray);
+            raytracer.trace(ray, 0, &color);
+            film.commit(sample, color);
+        }
+        film.writeImage(); 
+    }
+
+    bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal){
+    // A = dir * dir
+        float A = ray.dir.dot(ray.dir);
+    // B = 2 dir * (pos - center)
+        float B = 2.0 * ray.dir.dot(ray.pos - center);
+    // C =  (pos - center) * (pos - center) - r^2
+        float C = (ray.pos - center).dot(ray.pos - center) - radius*radius;
+    // std::cout << " A = " << A << " B = " << B << " C = " << C << std::endl;
+    if (discriminant(A, B, C) < 0) { // no intersection
+        // std::cout <<  " No intersection " << std::endl << std::endl;
+        return false;
+    }
+    // discriminant >=0,  ray is tangent or intersects in 2 pts
+    float t = solve_quadratic(A, B, C);
+    // Ri = [xi, yi, zi] = [x0 + xd * ti ,  y0 + yd * ti,  z0 + zd * ti]
+    intersect = ray.pos + ray.dir*t;
+    //Unit N at surface SN = [(xi - xc)/Sr,   (yi - yc)/Sr,   (zi - zc)/Sr]
+    normal = (intersect - center)/radius;
+    // std::cout << " intersect point = "<< intersect << " normal = "<< normal<< std::endl;
+    return true;
+}; 
 
 // http://www.cs.washington.edu/education/courses/cse457/07sp/lectures/triangle_intersection.pdf
 
@@ -220,32 +186,16 @@ bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& no
         || ((C-B).cross(intersect-B)).dot(N) < 0
         || ((A-C).cross(intersect-C)).dot(N) < 0) {
         std::cout <<  " No intersection " << std::endl;
-        return false;
-    } else {
-        float alpha = ((C-B).cross(intersect-B)).dot(N)/((B-A).cross(C-A)).dot(N);
-        float beta = ((A-C).cross(intersect-C)).dot(N)/((B-A).cross(C-A)).dot(N);
-        float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
-
-        normal = N;
-        intersect = ray.pos + (ray.dir * t);
-        return true;
-    }
     return false;
-}
+} else {
+    float alpha = ((C-B).cross(intersect-B)).dot(N)/((B-A).cross(C-A)).dot(N);
+    float beta = ((A-C).cross(intersect-C)).dot(N)/((B-A).cross(C-A)).dot(N);
+    float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
 
-void Scene::render() {
-    Sampler sampler = Sampler(width, height);
-    Sample sample;
-    Film film = Film("test1.png", width, height);
-    RGBQUAD image_color;
-    Vector3f color;
-    Ray ray;
-    while (sampler.generateSample(&sample)) {
-         // cout << "sample = " << sample.x << " " << sample.y << endl;
-        camera.generateRay(sample, &ray);
-        raytracer.trace(ray, 0, &color);
-        film.commit(sample, color);
-    }
-    film.writeImage(); 
+    normal = N;
+    intersect = ray.pos + (ray.dir * t);
+    return true;
+}
+return false;
 }
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include "FreeImage.h"
 #include "class.h"
+#include "transform.h"
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -186,13 +187,9 @@ void Scene::loadScene(string file) {
         	atof(splitline[1].c_str()),
         	atof(splitline[2].c_str()),
         	atof(splitline[3].c_str()));
-      	// Transformation *transform = transform_stack.back();
-      	// transform.add_transformation(TransformMatrix(translation, 0));
       	transform_stack.back().add_transformation(TransformMatrix(translation, 0));
-      	// cout<< "pushing translation matrix" << endl << translation << endl;
-      	cout<< endl << endl << " now transformation = " << endl;
+      	cout<< endl << endl << " added translation, now transformation = " << endl;
       	transform_stack.back().print();
-        // Update top of matrix stack
       }
       //rotate x y z angle
       //  Rotate by angle (in degrees) about the given axis as in OpenGL.
@@ -206,10 +203,13 @@ void Scene::loadScene(string file) {
       //scale x y z
       //  Scale by the corresponding amount in each axis (a non-uniform scaling).
       else if(!splitline[0].compare("scale")) {
-        // x: atof(splitline[1].c_str())
-        // y: atof(splitline[2].c_str())
-        // z: atof(splitline[3].c_str())
-        // Update top of matrix stack
+      	Matrix4f scale = scale_matrix(
+        	atof(splitline[1].c_str()),
+        	atof(splitline[2].c_str()),
+        	atof(splitline[3].c_str()));
+      	    transform_stack.back().add_transformation(TransformMatrix(scale, 1));
+      	    cout<< endl << endl << " added scale, now transformation = " << endl;
+      		transform_stack.back().print();
       }
       //pushTransform
       //  Push the current modeling transform on the stack as in OpenGL. 
