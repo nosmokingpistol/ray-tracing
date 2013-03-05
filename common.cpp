@@ -18,9 +18,3 @@ float solve_quadratic(float A, float B, float C) {
     return t1;
 }
 
-Vector3f convert_to_3d(Vector4f v) { // converts vector by removing w
-    return Vector3f(v(0), v(1), v(2));
-};
-Vector4f convert_to_4d(Vector3f v) {
-     return Vector4f(v(0), v(1), v(2), 1);
-};

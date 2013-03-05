@@ -5,8 +5,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
 
-
 #define PI 3.14159265
+
 
 using namespace Eigen;
 
@@ -113,7 +113,7 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         cur_prim.transform.transform_ray(ray);
             // cur_prim.print();  
         if (cur_prim.intersect(ray, &thit, intersect, normal)) {
-                // std::cout << " setting color to red!!" << std::endl;
+            std::cout << " setting color to red!!" << std::endl;
             *color = Vector3f(100, 0, 0);
                 // std::cout << "intersection: t = " << thit << " intersect point = ";
                 // intersect.print();
@@ -129,30 +129,30 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
 
 
 
-    void Scene::render() {
-        Sampler sampler = Sampler(width, height);
-        Sample sample;
-        Film film = Film("test1.png", width, height);
-        RGBQUAD image_color;
-        Vector3f color;
-        Ray ray;
-        while (sampler.generateSample(&sample)) {
+void Scene::render() {
+    Sampler sampler = Sampler(width, height);
+    Sample sample;
+    Film film = Film("test1.png", width, height);
+    RGBQUAD image_color;
+    Vector3f color;
+    Ray ray;
+    while (sampler.generateSample(&sample)) {
          // cout << "sample = " << sample.x << " " << sample.y << endl;
-            camera.generateRay(sample, &ray);
-            raytracer.trace(ray, 0, &color);
-            film.commit(sample, color);
-        }
-        film.writeImage(); 
+        camera.generateRay(sample, &ray);
+        raytracer.trace(ray, 0, &color);
+        film.commit(sample, color);
     }
+    film.writeImage(); 
+}
 
-    bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal){
+bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal){
     // A = dir * dir
-        float A = ray.dir.dot(ray.dir);
+    float A = ray.dir.dot(ray.dir);
     // B = 2 dir * (pos - center)
-        float B = 2.0 * ray.dir.dot(ray.pos - center);
+    float B = 2.0 * ray.dir.dot(ray.pos - center);
     // C =  (pos - center) * (pos - center) - r^2
-        float C = (ray.pos - center).dot(ray.pos - center) - radius*radius;
-    // std::cout << " A = " << A << " B = " << B << " C = " << C << std::endl;
+    float C = (ray.pos - center).dot(ray.pos - center) - radius*radius;
+    std::cout << " A = " << A << " B = " << B << " C = " << C << std::endl;
     if (discriminant(A, B, C) < 0) { // no intersection
         // std::cout <<  " No intersection " << std::endl << std::endl;
         return false;
@@ -179,13 +179,13 @@ bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& no
     } else {
         t = (d - N.dot(ray.pos))/(N.dot(ray.dir));
     }
-    std::cout << "t calculated as: " << t << std::endl;
+    // std::cout << "t calculated as: " << t << std::endl;
     intersect = ray.pos + (t*ray.dir);
     
     if (((B-A).cross(intersect-A)).dot(N) < 0
         || ((C-B).cross(intersect-B)).dot(N) < 0
         || ((A-C).cross(intersect-C)).dot(N) < 0) {
-        std::cout <<  " No intersection " << std::endl;
+        // std::cout <<  " No intersection " << std::endl;
     return false;
 } else {
     float alpha = ((C-B).cross(intersect-B)).dot(N)/((B-A).cross(C-A)).dot(N);

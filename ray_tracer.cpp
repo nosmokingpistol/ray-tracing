@@ -5,16 +5,12 @@
 #include <vector>
 #include "FreeImage.h"
 #include "class.h"
-#include "transform.h"
 
 #define WIDTH 800
 #define HEIGHT 600
 #define BPP 24 // Since we ' re o u t p u tti n g t h r e e 8 b i t RGB v a l u e s
 
 using namespace std ;
-
-
-
 
 
 void Scene::loadScene(string file) {
@@ -194,10 +190,14 @@ void Scene::loadScene(string file) {
       //rotate x y z angle
       //  Rotate by angle (in degrees) about the given axis as in OpenGL.
       else if(!splitline[0].compare("rotate")) {
-        // x: atof(splitline[1].c_str())
-        // y: atof(splitline[2].c_str())
-        // z: atof(splitline[3].c_str())
-        // angle: atof(splitline[4].c_str())
+      	Matrix4f rotation = rotation_matrix(
+        	atof(splitline[1].c_str()),
+        	atof(splitline[2].c_str()),
+        	atof(splitline[3].c_str()),
+        	atof(splitline[4].c_str()));
+      	transform_stack.back().add_transformation(TransformMatrix(rotation, 2));
+      	cout<< endl << endl << " added rotation, now transformation = " << endl;
+      	transform_stack.back().print();
         // Update top of matrix stack
       }
       //scale x y z

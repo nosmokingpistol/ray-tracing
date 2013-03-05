@@ -1,20 +1,31 @@
-# sphere scale test
 
 
 size 100 100
 
 camera 0 0 4 0 0 0 0 1 0 30
 
+
+
 pushTransform
+
+
 #scale horizontally
-	scale 2 1 1
-	
+#	scale 2 1 1
 
 #scale vertically
-#	scale 1 2 1
+	scale 1 2 1
 
 #scale into screen
 #	scale 1 1 2
 
-sphere 0 0 -5 1
+# sphere scale test
+#sphere 0 0 -5 1
+
+#triangle scale test
+
+
+vertex -1 -1 -10 
+vertex +1 -1 -10
+vertex +1 +1 -10
+tri 0 1 2
 popTransform
