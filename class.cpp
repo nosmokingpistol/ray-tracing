@@ -85,11 +85,15 @@ void Camera::generateRay(Sample &sample, Ray* ray){
     // R(t) = E + t(P-E)
     ray->pos = eye_pos;
     // x = tan(fovx/2)((x - width/2 )) / width/2
-    float scalar = 2.0*tan(fov_y/2);
-    Vector3f Xinc = scalar/width*U;
-    Vector3f Yinc = scalar/height*V;
-    Vector3f y = (sample.y-(height/2))*Yinc;
-    Vector3f x = (sample.x-(width/2))*Xinc;
+    float scalarY = 2.0*tan(fov_y/2);
+
+    float fov_x = atan(tan(fov_y/2)*width/height)*2;
+    float scalarX = 2.0*tan(fov_x/2);
+
+    Vector3f Xinc = scalarX/width*U;
+    Vector3f Yinc = scalarY/height*V;
+    Vector3f y = (sample.y+0.5-(height/2))*Yinc;
+    Vector3f x = (sample.x+0.5-(width/2))*Xinc;
     Vector3f pixel = x + y;    
 
     ray->dir = (pixel + N);
