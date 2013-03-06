@@ -2,8 +2,8 @@
 #define TRANSFORM_H
 
 #include <Eigen/Dense>
-#include "common.h"
 #include <vector>
+#include "common.h"
 
 using namespace Eigen;
 

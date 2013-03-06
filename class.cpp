@@ -10,6 +10,8 @@
 
 using namespace Eigen;
 
+Vector3f g_ambience, g_diffuse, g_specular;
+float spec_power;
 
 bool Sampler::generateSample(Sample* sample) { 
     if (cur_w == width) {

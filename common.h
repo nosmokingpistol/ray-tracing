@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <Eigen/Dense>
+#include <iostream>
 using namespace Eigen;
 
 float discriminant(float A, float B, float C);

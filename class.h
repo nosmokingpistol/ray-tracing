@@ -1,13 +1,14 @@
 #ifndef CLASS_H
 #define CLASS_H
 
-#include "common.h"
-#include "transform.h"
-#include "FreeImage.h"
 #include <iostream>
-
 #include <vector>
 #include <Eigen/Dense>
+
+#include "common.h"
+#include "transform.h"
+#include "light.h"
+#include "FreeImage.h"
 
 using namespace Eigen;
 
