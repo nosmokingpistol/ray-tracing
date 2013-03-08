@@ -7,6 +7,7 @@ using namespace Eigen;
 
 float discriminant(float A, float B, float C);
 float solve_quadratic(float A, float B, float C);
+float manhattan_distance(Vector3f A, Vector3f B);
 
 class Ray
 {

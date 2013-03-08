@@ -109,8 +109,8 @@ void Transformation::transform_ray_origin_matrix() {
         TransformMatrix cur = *rit;
     transform_ray_origin = transform_ray_origin * cur.inverse();
 }
-std::cout << " transform ray origin matrix = " << std::endl;
-std::cout << transform_ray_origin << std::endl;
+// std::cout << " transform ray origin matrix = " << std::endl;
+// std::cout << transform_ray_origin << std::endl;
 }
 
 void Transformation::transform_ray_dir_matrix() {
@@ -123,8 +123,8 @@ void Transformation::transform_ray_dir_matrix() {
             transform_ray_dir = transform_ray_dir * cur.inverse();       
         }
     }
-    std::cout << " transform_ray_dir matrix = " << std::endl;
-    std::cout << transform_ray_dir << std::endl;
+    // std::cout << " transform_ray_dir matrix = " << std::endl;
+    // std::cout << transform_ray_dir << std::endl;
 }
 
 void Transformation::get_normal_matrix() {

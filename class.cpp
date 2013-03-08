@@ -1,6 +1,7 @@
 
 #include "class.h"
 #include "common.h"
+#include "float.h"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry> 
@@ -75,10 +76,10 @@ Camera::Camera(Vector3f lfrm, Vector3f lat, Vector3f u, float fov, float screen_
     V = W.cross(U);
     V.normalize();
 
-    std::cout << " Camera eye = " << eye_pos  << " V = "<< V << " U = " << U<< " N = " << N << std::endl;
-    std::cout << " screen_width = " << screen_width << " screen_height = " << screen_height;
-    std::cout << " image_height = " << image_height << " image_width = " << image_width;
-    std::cout << " pixel_width = " << pixel_width << " pixel_height = " << pixel_height << std::endl;
+    // std::cout << " Camera eye = " << eye_pos  << " V = "<< V << " U = " << U<< " N = " << N << std::endl;
+    // std::cout << " screen_width = " << screen_width << " screen_height = " << screen_height;
+    // std::cout << " image_height = " << image_height << " image_width = " << image_width;
+    // std::cout << " pixel_width = " << pixel_width << " pixel_height = " << pixel_height << std::endl;
 }
 
 void Camera::generateRay(Sample &sample, Ray* ray){
@@ -114,36 +115,49 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
     Vector3f normal;
     Vector3f intersect;
     float thit;
+    Primitive closest_primitive; // only compute lighting for closest object
+    Vector3f closest_normal;
+    float closest_distance = FLT_MAX;
+
+    // loop through primitives and find closest intersection
     for(itr = primitives.begin(); itr != primitives.end(); ++itr) {
-            // std::cout<< " ****looping" << std::endl;
         Primitive& cur_prim = **itr;
         cur_prim.transform.transform_ray(ray);
             // cur_prim.print();  
         if (cur_prim.intersect(ray, &thit, intersect, normal)) {
-	    Vector3f final_color;
-	    /*for (itr = lights.begin(); itr != lights.end(); ++itr) {
-	        Light& cur_light = **itr;
-	        final_color += cur_light.calc_amb(g_ambience, cur_light.intensities);
-
-	        final_color += cur_light.calc_diff(g_diffuse, cur_light.intensities, normal);
-
-	        final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);
-	        
-	    }*/
-	    // *color = final_color;
-            std::cout << " setting color to red!!" << std::endl;
-            *color = Vector3f(100, 0, 0);
-                // std::cout << "intersection: t = " << thit << " intersect point = ";
-                // intersect.print();
-                // std::cout << "normal = ";
-                // std::cout << std::endl;
+            // update closest primitive
+            float distance = manhattan_distance(eye_pos, intersect);
+            if (distance < closest_distance) {
+                closest_primitive = cur_prim;
+                closest_distance = distance;
+                closest_normal = normal;
+            }
         }
-        else {// no primitive intersection
-            *color = Vector3f(0, 0, 0);
-                                      // cout << " BLACK!!" << endl;
+        // if there was an object, compute lighting
+        if (closest_distance != FLT_MAX) {
+    	    Vector3f final_color;
+    	    /*for (itr = lights.begin(); itr != lights.end(); ++itr) {
+    	        Light& cur_light = **itr;
+    	        final_color += cur_light.calc_amb(g_ambience, cur_light.intensities);
+
+    	        final_color += cur_light.calc_diff(g_diffuse, cur_light.intensities, closest_normal);
+
+    	        final_color += cur_light.calc_spec(g_specular, cur_light.intensities, closest_normal, cur_light.l_vec, spec_power);
+    	        
+    	    }*/
+    	    // *color = final_color;
+                std::cout << " setting color to red!!" << std::endl;
+                *color = Vector3f(100, 0, 0);
+                    // std::cout << "intersection: t = " << thit << " intersect point = ";
+                    // intersect.print();
+                    // std::cout << "normal = ";
+                    // std::cout << std::endl;
+            }
+        else {// no primitive intersection , add ambient light? 
+            *color = Vector3f(0, 0, 0); // cout << " BLACK!!" << endl;
+            }
         }
     }
-}
 
 
 
