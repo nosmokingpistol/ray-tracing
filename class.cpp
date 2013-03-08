@@ -87,6 +87,7 @@ void Camera::generateRay(Sample &sample, Ray* ray){
     // x = tan(fovx/2)((x - width/2 )) / width/2
     float scalarY = 2.0*tan(fov_y/2);
 
+    // Have to calculate fov_x;
     float fov_x = atan(tan(fov_y/2)*width/height)*2;
     float scalarX = 2.0*tan(fov_x/2);
 
@@ -119,6 +120,17 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         cur_prim.transform.transform_ray(ray);
             // cur_prim.print();  
         if (cur_prim.intersect(ray, &thit, intersect, normal)) {
+	    Vector3f final_color;
+	    /*for (itr = lights.begin(); itr != lights.end(); ++itr) {
+	        Light& cur_light = **itr;
+	        final_color += cur_light.calc_amb(g_ambience, cur_light.intensities);
+
+	        final_color += cur_light.calc_diff(g_diffuse, cur_light.intensities, normal);
+
+	        final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);
+	        
+	    }*/
+	    // *color = final_color;
             std::cout << " setting color to red!!" << std::endl;
             *color = Vector3f(100, 0, 0);
                 // std::cout << "intersection: t = " << thit << " intersect point = ";

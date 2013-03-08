@@ -143,6 +143,8 @@ class RayTracer
 {
     public:
         std::vector<Primitive*> primitives;
+	std::vector<Light*> lights;
+
         int depth_threshold;
         RayTracer() {}; // initialize vector
         void add_primitive(Primitive *prim) {

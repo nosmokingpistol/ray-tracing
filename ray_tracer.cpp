@@ -264,9 +264,9 @@ void Scene::loadScene(string file) {
       //  The global ambient color to be added for each object 
       //  (default is .2,.2,.2)
       else if(!splitline[0].compare("ambient")) {
-        // r: atof(splitline[1].c_str())
-        // g: atof(splitline[2].c_str())
-        // b: atof(splitline[3].c_str())
+        float r_amb = atof(splitline[1].c_str());
+        float g_amb = atof(splitline[2].c_str());
+        float b_amb = atof(splitline[3].c_str());
       }
 
       //diï¬€use r g b
