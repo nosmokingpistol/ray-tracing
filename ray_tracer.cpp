@@ -17,6 +17,7 @@ void Scene::loadScene(string file) {
   //store variables and set stuff at the end
   std::string fname = "output.bmp";
   vector<Vector3f> vertices;
+
   vector<Transformation> transform_stack;
   ifstream inpfile(file.c_str());
   if(!inpfile.is_open()) {
@@ -81,28 +82,20 @@ void Scene::loadScene(string file) {
            atof(splitline[9].c_str()));
         float fov = atof(splitline[10].c_str());
         camera = Camera(lookfrom, lookat, up, fov, width, height);
-		Transformation identity = Transformation(); // empty transform
-		transform_stack.push_back(identity);       
-        // push identity transform to stack?
-        //   cout<< "pushing identity matrix" << endl << identity << endl;
+        raytracer.eye_pos = lookfrom;
+    		Transformation identity = Transformation(); // empty transform
+    		transform_stack.push_back(identity);       
       }
 
       //sphere x y z radius
       //  Deï¬nes a sphere with a given position and radius.
       else if(!splitline[0].compare("sphere")) {
-      	cout << "adding sphere" << endl;
       	Sphere *sphere = new Sphere(atof(splitline[1].c_str()),
 			        atof(splitline[2].c_str()),
 			        atof(splitline[3].c_str()),
-					atof(splitline[4].c_str()));
+				      atof(splitline[4].c_str()));
       	sphere->set_transform(transform_stack.back());
-		raytracer.add_primitive(sphere);
-		cout << "finished adding sphere" << endl << endl << endl;
-
-        // Create new sphere:
-        //   Store 4 numbers
-        //   Store current property values
-        //   Store current top of matrix stack
+    		raytracer.add_primitive(sphere);
       }
       //maxverts number
       //  Deï¬nes a maximum number of vertices for later triangle speciï¬cations. 
@@ -150,7 +143,6 @@ void Scene::loadScene(string file) {
         Vector3f B = vertices[atof(splitline[2].c_str())];
         Vector3f C = vertices[atof(splitline[3].c_str())];
         Triangle *tri = new Triangle(A, B, C);
-      	// Transformation cur = Transformation(transform_stack);
         tri->set_transform(transform_stack.back());
         raytracer.add_primitive(tri);
         // Create new triangle:
@@ -183,8 +175,7 @@ void Scene::loadScene(string file) {
         	atof(splitline[2].c_str()),
         	atof(splitline[3].c_str()));
       	transform_stack.back().add_transformation(TransformMatrix(translation, 0));
-      	cout<< endl << endl << " added translation, now transformation = " << endl;
-      	transform_stack.back().print();
+      	// cout<< endl << endl << " added translation, now transformation = " << endl;
       }
       //rotate x y z angle
       //  Rotate by angle (in degrees) about the given axis as in OpenGL.
@@ -195,9 +186,7 @@ void Scene::loadScene(string file) {
         	atof(splitline[3].c_str()),
         	atof(splitline[4].c_str()));
       	transform_stack.back().add_transformation(TransformMatrix(rotation, 2));
-      	cout<< endl << endl << " added rotation, now transformation = " << endl;
-      	transform_stack.back().print();
-        // Update top of matrix stack
+      	// cout<< endl << endl << " added rotation, now transformation = " << endl;
       }
       //scale x y z
       //  Scale by the corresponding amount in each axis (a non-uniform scaling).
@@ -206,9 +195,8 @@ void Scene::loadScene(string file) {
         	atof(splitline[1].c_str()),
         	atof(splitline[2].c_str()),
         	atof(splitline[3].c_str()));
-      	    transform_stack.back().add_transformation(TransformMatrix(scale, 1));
-      	    cout<< endl << endl << " added scale, now transformation = " << endl;
-      		transform_stack.back().print();
+      	transform_stack.back().add_transformation(TransformMatrix(scale, 1));
+      	 // cout<< endl << endl << " added scale, now transformation = " << endl;
       }
       //pushTransform
       //  Push the current modeling transform on the stack as in OpenGL. 
@@ -216,7 +204,6 @@ void Scene::loadScene(string file) {
       //   the camera to preserve the â€œidentityâ€ transformation.
       else if(!splitline[0].compare("pushTransform")) {
       	transform_stack.push_back(Transformation());
-        //mst.push();
       }
       //popTransform
       //  Pop the current transform from the stack as in OpenGL. 
@@ -226,34 +213,30 @@ void Scene::loadScene(string file) {
       //  discussed above).
       else if(!splitline[0].compare("popTransform")) {
       	transform_stack.pop_back();
-        //mst.pop();
       }
-
       //directional x y z r g b
       //  The direction to the light source, and the color, as in OpenGL.
       else if(!splitline[0].compare("directional")) {
-        float x_directional = atof(splitline[1].c_str());
-        float y_directional = atof(splitline[2].c_str());
-        float z_directional = atof(splitline[3].c_str());
-        float r_directional = atof(splitline[4].c_str());
-        float g_directional = atof(splitline[5].c_str());
-        float b_directional = atof(splitline[6].c_str());
-        // add light to scene...
-	Directional_Light *d = new Directional_Light(x_directional, y_directional, z_directional, r_directional, g_directional, b_directional);
-	raytracer.add_light(d);
+          Light *light = new Directional_Light(
+            atof(splitline[1].c_str()),
+            atof(splitline[2].c_str()),
+            atof(splitline[3].c_str()),
+            atof(splitline[4].c_str()),
+            atof(splitline[5].c_str()),
+            atof(splitline[6].c_str()));
+          raytracer.add_light(light);
       }
       //point x y z r g b
       //  The location of a point source and the color, as in OpenGL.
       else if(!splitline[0].compare("point")) {
-        float x_point = atof(splitline[1].c_str());
-        float y_point = atof(splitline[2].c_str());
-        float z_point = atof(splitline[3].c_str());
-        float r_point = atof(splitline[4].c_str());
-        float g_point = atof(splitline[5].c_str());
-        float b_point = atof(splitline[6].c_str());
-        // add light to scene...
-	Point_Light *p = new Point_Light(x_point, y_point, z_point, r_point, g_point, b_point);
-	raytracer.add_light(p);
+          Light *light = new Point_Light(
+            atof(splitline[1].c_str()),
+            atof(splitline[2].c_str()),
+            atof(splitline[3].c_str()),
+            atof(splitline[4].c_str()),
+            atof(splitline[5].c_str()),
+            atof(splitline[6].c_str()));
+          raytracer.add_light(light);
       }
       //attenuation const linear quadratic
       //  Sets the constant, linear and quadratic attenuations 

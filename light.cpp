@@ -38,3 +38,10 @@ Vector3f Light::calc_spec (Vector3f specular, Vector3f intens, Vector3f normal, 
     Vector3f spec_values = specular.cwiseProduct(intensities)*pow(std::max(0.0f, reflection.dot(z)), specular_power);
     return spec_values;
 };
+
+void Light::print() {
+    std::cout << " light coordinates = " << std::endl << coordinates << std::endl;
+    std::cout << " light intensities = " << std::endl << intensities << std::endl;
+    
+}
+

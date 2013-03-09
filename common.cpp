@@ -18,3 +18,9 @@ float solve_quadratic(float A, float B, float C) {
     return t1;
 }
 
+float manhattan_distance(Vector3f A, Vector3f B) {
+	Vector3f diff = A - B;
+	float manh_dist = diff.cwiseAbs().sum();
+	return manh_dist;
+}
+

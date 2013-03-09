@@ -145,19 +145,21 @@ class RayTracer
 {
     public:
         std::vector<Primitive*> primitives;
-	std::vector<Light*> lights;
+	    std::vector<Light*> lights;
+        Vector3f eye_pos;
 
         int depth_threshold;
         RayTracer() {}; // initialize vector
         void add_primitive(Primitive *prim) {
             primitives.push_back(prim);
-            std::cout<< "added primitve" << std::endl;
-            prim->print();
+            // std::cout<< "added primitve" << std::endl;
+            // prim->print();
         }
-	void add_light(Light *l) {
-	    lights.push_back(l);
-	    std::cout << "Added light" << std::endl;
-	}
+        void add_light(Light *light) {
+            lights.push_back(light);
+            // std::cout<< "added light" << std::endl;
+            // light->print();
+        }
         void trace(Ray& ray, int depth, Vector3f* color);
 };
 
