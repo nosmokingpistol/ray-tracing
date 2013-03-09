@@ -134,14 +134,18 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
                 closest_normal = normal;
             }
         }
-        // if there was an object, compute lighting
-        if (closest_distance != FLT_MAX) {
-    	     Vector3f final_color;
-	    for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
+	// Compute ambient lighting
+ 	Vector3f final_color;
+	for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
 	        Light& cur_light = **l_itr;
 	        final_color += cur_light.calc_amb(::g_ambience, cur_light.intensities);
+	}
+        // if there was an object, compute specular and diffuse lighting
+        if (closest_distance != FLT_MAX) {
+	    for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
+	        Light& cur_light = **l_itr;
 
-	        final_color += cur_light.calc_diff(g_diffuse, cur_light.intensities, normal);
+	        final_color += cur_light.calc_diff(::g_diffuse, cur_light.intensities, normal);
 
 	        /*final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);*/
 	        
@@ -153,12 +157,12 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
                 // intersect.print();
                 // std::cout << "normal = ";
                 // std::cout << std::endl;
-            }
+        }
         else {// no primitive intersection , add ambient light? 
             *color = Vector3f(0, 0, 0); // cout << " BLACK!!" << endl;
-            }
         }
     }
+};
 
 
 
