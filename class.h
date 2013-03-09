@@ -12,13 +12,16 @@
 
 using namespace Eigen;
 
-extern Vector3f g_ambience, g_diffuse, g_specular;
-extern float spec_power;
+extern Vector3f g_ambience;
 
 class Primitive // this is a base class, necessary?
 {
     public:
         Transformation transform;
+        Vector3f emission;
+        Vector3f specular;
+        Vector3f diffuse;
+        float shiny;
         // Test if ray intersects with the shape or not (in object space), if so,
         // return intersection point and normal
         virtual bool intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal){};
@@ -29,6 +32,10 @@ class Primitive // this is a base class, necessary?
             transform.initialize();
             // t.print();
         };
+        void set_emission(Vector3f e) {emission = e;};
+        void set_specular(Vector3f s) {specular = s;};
+        void set_diffuse(Vector3f d) {diffuse = d;};
+        void set_shiny(float s) {shiny = s;};
 
         // Triangle and Sphere are probably best implemented here
         // The intersection with the ray at t outside the range [t_min, t_max]
@@ -103,16 +110,17 @@ class Camera
         float fov_y; // fov angle specifies the vertical field of view
         float height; 
         float width; 
-        float image_height;
-        float image_width;
 
         Vector3f N; // viewing direction
 
         Vector3f W;
         Vector3f U; // corresponds to "X" axis
         Vector3f V; // up vector
-        float pixel_width; // direction increment vectors for pixels not in center of screen
-        float pixel_height;
+
+
+        float scalarY, fov_x, scalarX;
+        Vector3f Xinc, Yinc;
+
 
         Camera() {};
         Camera(Vector3f lookfrom, Vector3f lat, Vector3f u, float fov, float screen_width, float screen_height);

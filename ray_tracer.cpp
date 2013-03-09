@@ -17,6 +17,11 @@ void Scene::loadScene(string file) {
   //store variables and set stuff at the end
   std::string fname = "output.bmp";
   vector<Vector3f> vertices;
+  vector<Vector3f> emission_stack;
+  vector<Vector3f> specular_stack;
+  vector<Vector3f> diffuse_stack;
+  vector<float> shiny_stack;
+
 
   vector<Transformation> transform_stack;
   ifstream inpfile(file.c_str());
@@ -25,7 +30,6 @@ void Scene::loadScene(string file) {
   	} 
   else {
     string line;
-    //MatrixStack mst;
 
     while(inpfile.good()) {
       vector<string> splitline;
@@ -85,6 +89,11 @@ void Scene::loadScene(string file) {
         raytracer.eye_pos = lookfrom;
     		Transformation identity = Transformation(); // empty transform
     		transform_stack.push_back(identity);       
+
+        emission_stack.push_back(Vector3f(0, 0, 0)); // default 0 emission
+        specular_stack.push_back(Vector3f(0, 0, 0)); // default 0 specular
+        diffuse_stack.push_back(Vector3f(0, 0, 0)); // default 0 emission
+        shiny_stack.push_back(0.0); // default 0 shininess;
       }
 
       //sphere x y z radius
@@ -95,7 +104,19 @@ void Scene::loadScene(string file) {
 			        atof(splitline[3].c_str()),
 				      atof(splitline[4].c_str()));
       	sphere->set_transform(transform_stack.back());
+        
+        sphere->set_emission(emission_stack.back());
+        sphere->set_specular(specular_stack.back());
+        sphere->set_diffuse(diffuse_stack.back());
+        sphere->set_shiny(shiny_stack.back());
     		raytracer.add_primitive(sphere);
+
+
+        cout<< " sphere emission = " <<endl << emission_stack.back() << endl;
+        cout<< " sphere specular = " <<endl << specular_stack.back() << endl;
+        cout<< " sphere diffuse = " <<endl << diffuse_stack.back() << endl;
+        cout<< " sphere shiny = " <<endl << shiny_stack.back() << endl;
+
       }
       //maxverts number
       //  Deï¬nes a maximum number of vertices for later triangle speciï¬cations. 
@@ -144,12 +165,17 @@ void Scene::loadScene(string file) {
         Vector3f C = vertices[atof(splitline[3].c_str())];
         Triangle *tri = new Triangle(A, B, C);
         tri->set_transform(transform_stack.back());
+        tri->set_emission(emission_stack.back());
+        tri->set_specular(specular_stack.back());
+        tri->set_diffuse(diffuse_stack.back());
+        tri->set_shiny(shiny_stack.back());
         raytracer.add_primitive(tri);
-        // Create new triangle:
-        //   Store pointer to array of vertices
-        //   Store 3 integers to index into array
-        //   Store current property values
-        //   Store current top of matrix stack
+
+        // cout<< " triangle emission = " <<endl << emission_stack.back() << endl;
+        // cout<< " triangle specular = " <<endl << specular_stack.back() << endl;
+        // cout<< " triangle diffuse = " <<endl << diffuse_stack.back() << endl;
+        // cout<< " triangle shiny = " <<endl << shiny_stack.back() << endl;
+
       }
       //trinormal v1 v2 v3
       //  Same as above but for vertices speciï¬ed with normals.
@@ -260,33 +286,31 @@ void Scene::loadScene(string file) {
       //diï¬€use r g b
       //  speciï¬es the diï¬€use color of the surface.
       else if(!splitline[0].compare("diffuse")) {
-        float r_diff = atof(splitline[1].c_str());
-        float g_diff = atof(splitline[2].c_str());
-        float b_diff = atof(splitline[3].c_str());
-        // Update current properties
-	g_diffuse << r_diff, g_diff, b_diff;
+        Vector3f diffuse = Vector3f(atof(splitline[1].c_str()),
+                                    atof(splitline[2].c_str()),
+                                    atof(splitline[3].c_str()));
+        diffuse_stack.push_back(diffuse);
       }
       //specular r g b 
       //  speciï¬es the specular color of the surface.
       else if(!splitline[0].compare("specular")) {
-        // r: atof(splitline[1].c_str())
-        // g: atof(splitline[2].c_str())
-        // b: atof(splitline[3].c_str())
-        // Update current properties
+        Vector3f specular = Vector3f(atof(splitline[1].c_str()),
+                                    atof(splitline[2].c_str()),
+                                    atof(splitline[3].c_str()));
+        specular_stack.push_back(specular);
       }
       //shininess s
       //  speciï¬es the shininess of the surface.
       else if(!splitline[0].compare("shininess")) {
-        // shininess: atof(splitline[1].c_str())
-        // Update current properties
+        shiny_stack.push_back(atof(splitline[1].c_str()));
       }
       //emission r g b
       //  gives the emissive color of the surface.
       else if(!splitline[0].compare("emission")) {
-        // r: atof(splitline[1].c_str())
-        // g: atof(splitline[2].c_str())
-        // b: atof(splitline[3].c_str())
-        // Update current properties
+        Vector3f emission(atof(splitline[1].c_str()),
+           atof(splitline[2].c_str()),
+           atof(splitline[3].c_str()));
+        emission_stack.push_back(emission);
       } else {
         cerr << "Unknown command: " << splitline[0] << endl;
       }

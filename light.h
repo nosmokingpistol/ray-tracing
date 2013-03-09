@@ -12,7 +12,7 @@ class Light
 
     Vector3f calc_amb (Vector3f ambience, Vector3f intensities);
     virtual Vector3f calc_diff (Vector3f diffuse, Vector3f intensities, Vector3f normal){};
-    Vector3f calc_spec (Vector3f specular, Vector3f intensities, Vector3f normal, Vector3f l_vector, float specular_power);
+    Vector3f calc_spec (Vector3f specular, Vector3f intensities, Vector3f normal, Vector3f viewer_direction, Vector3f l_vector, float specular_power);
     void print();
 };
 
