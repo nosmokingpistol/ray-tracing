@@ -17,7 +17,7 @@ Vector3f Directional_Light::calc_diff(Vector3f diffuse, Vector3f intens, Vector3
 {
     l_vec = coordinates;
     Vector3f diff_values = diffuse.cwiseProduct(intens)*(std::max(0.0f, normal.dot(coordinates)));
-    // std::cout << "****directional light diffuse = " << std::endl << diff_values << std::endl;
+    std::cout << "****directional light diffuse = " << std::endl << diff_values << std::endl;
     return diff_values;
 };
 
@@ -27,7 +27,7 @@ Vector3f Point_Light::calc_diff (Vector3f diffuse, Vector3f intens, Vector3f nor
     l_vector.normalize();
     l_vec = l_vector; // save l for reflection
     Vector3f diff_values = diffuse.cwiseProduct(intens)*(std::max(0.0f, normal.dot(l_vector)));
-    // std::cout << " ****point light diffuse = " << std::endl << diff_values << std::endl;
+    std::cout << " ****point light diffuse = " << std::endl << diff_values << std::endl;
 
     return diff_values;
 };

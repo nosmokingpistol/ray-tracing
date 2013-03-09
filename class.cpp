@@ -147,18 +147,12 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
     }
 	
     if (closest_distance != FLT_MAX) {
-
-        // just for debugging
-        if (closest_primitive.emission == Vector3f(1, 1, 1)) {
-            std::cout << " found a white sphere!" << std::endl;
-        }
-
-
         // Compute ambient lighting
         Vector3f final_color = g_ambience;
 
         // add object's emission
         final_color = final_color + closest_primitive.emission;
+        // std::cout << " after ambience, final_color = " << std::endl << final_color <<std::endl;
         // std::cout << " final color with ambience = " << std::endl << final_color << std::endl;
         for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
             Light& cur_light = **l_itr;
@@ -167,13 +161,18 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         }
 
         *color = final_color;
-        if (final_color(0) > 1 || final_color(1) > 1 || final_color(2) > 1) {
+        if (final_color(0) >=1 || final_color(1) >=1 || final_color(2) >= 1) {
             std::cout << " error, final_color = " << std::endl << final_color << std::endl;
             final_color = Vector3f(1, 1, 1);
         }
 
         // std::cout << " after  other lighting, color = " << std::endl << *color << std::endl;
         *color = final_color * 256;
+         if ((*color)(0) >=255 || (*color)(1) >=255 || (*color)(2) >= 255) {
+            std::cout << " changing to white" << std::endl;
+             *color = Vector3f(255, 255, 255);
+        }
+
         /*std::cout << " setting color to red!!" << std::endl;
         *color = Vector3f(100, 0, 0);*/
             // std::cout << "intersection: t = " << thit << " intersect point = ";
