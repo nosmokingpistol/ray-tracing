@@ -253,7 +253,8 @@ void Scene::loadScene(string file) {
         float r_amb = atof(splitline[1].c_str());
         float g_amb = atof(splitline[2].c_str());
         float b_amb = atof(splitline[3].c_str());
-	g_ambience << r_amb, g_amb, b_amb;
+	      g_ambience << r_amb, g_amb, b_amb;
+        cout << " adding global ambience = " << endl << g_ambience << endl;
       }
 
       //diï¬€use r g b
