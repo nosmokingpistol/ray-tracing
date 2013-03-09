@@ -12,7 +12,6 @@
 
 using namespace std ;
 
-
 void Scene::loadScene(string file) {
 
   //store variables and set stuff at the end
@@ -233,24 +232,28 @@ void Scene::loadScene(string file) {
       //directional x y z r g b
       //  The direction to the light source, and the color, as in OpenGL.
       else if(!splitline[0].compare("directional")) {
-        // x: atof(splitline[1].c_str()),
-        // y: atof(splitline[2].c_str()),
-        // z: atof(splitline[3].c_str()));
-        // r: atof(splitline[4].c_str()),
-        // g: atof(splitline[5].c_str()),
-        // b: atof(splitline[6].c_str()));
+        float x_directional = atof(splitline[1].c_str());
+        float y_directional = atof(splitline[2].c_str());
+        float z_directional = atof(splitline[3].c_str());
+        float r_directional = atof(splitline[4].c_str());
+        float g_directional = atof(splitline[5].c_str());
+        float b_directional = atof(splitline[6].c_str());
         // add light to scene...
+	Directional_Light *d = new Directional_Light(x_directional, y_directional, z_directional, r_directional, g_directional, b_directional);
+	raytracer.add_light(d);
       }
       //point x y z r g b
       //  The location of a point source and the color, as in OpenGL.
       else if(!splitline[0].compare("point")) {
-        // x: atof(splitline[1].c_str()),
-        // y: atof(splitline[2].c_str()),
-        // z: atof(splitline[3].c_str()));
-        // r: atof(splitline[4].c_str()),
-        // g: atof(splitline[5].c_str()),
-        // b: atof(splitline[6].c_str()));
+        float x_point = atof(splitline[1].c_str());
+        float y_point = atof(splitline[2].c_str());
+        float z_point = atof(splitline[3].c_str());
+        float r_point = atof(splitline[4].c_str());
+        float g_point = atof(splitline[5].c_str());
+        float b_point = atof(splitline[6].c_str());
         // add light to scene...
+	Point_Light *p = new Point_Light(x_point, y_point, z_point, r_point, g_point, b_point);
+	raytracer.add_light(p);
       }
       //attenuation const linear quadratic
       //  Sets the constant, linear and quadratic attenuations 
@@ -267,15 +270,17 @@ void Scene::loadScene(string file) {
         float r_amb = atof(splitline[1].c_str());
         float g_amb = atof(splitline[2].c_str());
         float b_amb = atof(splitline[3].c_str());
+	g_ambience << r_amb, g_amb, b_amb;
       }
 
       //diï¬€use r g b
       //  speciï¬es the diï¬€use color of the surface.
       else if(!splitline[0].compare("diffuse")) {
-        // r: atof(splitline[1].c_str())
-        // g: atof(splitline[2].c_str())
-        // b: atof(splitline[3].c_str())
+        float r_diff = atof(splitline[1].c_str());
+        float g_diff = atof(splitline[2].c_str());
+        float b_diff = atof(splitline[3].c_str());
         // Update current properties
+	g_diffuse << r_diff, g_diff, b_diff;
       }
       //specular r g b 
       //  speciï¬es the specular color of the surface.

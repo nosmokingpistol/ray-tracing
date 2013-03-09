@@ -12,6 +12,8 @@
 
 using namespace Eigen;
 
+extern Vector3f g_ambience, g_diffuse, g_specular;
+extern float spec_power;
 
 class Primitive // this is a base class, necessary?
 {
@@ -152,6 +154,10 @@ class RayTracer
             std::cout<< "added primitve" << std::endl;
             prim->print();
         }
+	void add_light(Light *l) {
+	    lights.push_back(l);
+	    std::cout << "Added light" << std::endl;
+	}
         void trace(Ray& ray, int depth, Vector3f* color);
 };
 

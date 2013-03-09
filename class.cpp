@@ -111,6 +111,7 @@ void Camera::generateRay(Sample &sample, Ray* ray){
 void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         // for each object, determine closet object of intersection
     std::vector<Primitive*>::iterator itr;
+    std::vector<Light*>::iterator l_itr;
     Vector3f normal;
     Vector3f intersect;
     float thit;
@@ -121,18 +122,18 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
             // cur_prim.print();  
         if (cur_prim.intersect(ray, &thit, intersect, normal)) {
 	    Vector3f final_color;
-	    /*for (itr = lights.begin(); itr != lights.end(); ++itr) {
-	        Light& cur_light = **itr;
-	        final_color += cur_light.calc_amb(g_ambience, cur_light.intensities);
+	    for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
+	        Light& cur_light = **l_itr;
+	        final_color += cur_light.calc_amb(::g_ambience, cur_light.intensities);
 
 	        final_color += cur_light.calc_diff(g_diffuse, cur_light.intensities, normal);
 
-	        final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);
+	        /*final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);*/
 	        
-	    }*/
-	    // *color = final_color;
-            std::cout << " setting color to red!!" << std::endl;
-            *color = Vector3f(100, 0, 0);
+	    }
+	    *color = final_color;
+            /*std::cout << " setting color to red!!" << std::endl;
+            *color = Vector3f(100, 0, 0);*/
                 // std::cout << "intersection: t = " << thit << " intersect point = ";
                 // intersect.print();
                 // std::cout << "normal = ";
