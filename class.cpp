@@ -134,33 +134,31 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
                 closest_normal = normal;
             }
         }
+    }
 	// Compute ambient lighting
  	Vector3f final_color;
 	for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
 	        Light& cur_light = **l_itr;
 	        final_color += cur_light.calc_amb(::g_ambience, cur_light.intensities);
 	}
+    // std::cout << " after ambient lighting, final_color = " << std::endl << final_color << std::endl;
         // if there was an object, compute specular and diffuse lighting
-        if (closest_distance != FLT_MAX) {
-	    for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
-	        Light& cur_light = **l_itr;
-
-	        final_color += cur_light.calc_diff(::g_diffuse, cur_light.intensities, normal);
-
-	        /*final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);*/
-	        
-	    }
-	    *color = final_color;
-            /*std::cout << " setting color to red!!" << std::endl;
-            *color = Vector3f(100, 0, 0);*/
-                // std::cout << "intersection: t = " << thit << " intersect point = ";
-                // intersect.print();
-                // std::cout << "normal = ";
-                // std::cout << std::endl;
+    if (closest_distance != FLT_MAX) {
+        // std::cout<< " computing lighting for closest object" << std::endl;
+        for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
+            Light& cur_light = **l_itr;
+            final_color += cur_light.calc_diff(::g_diffuse, cur_light.intensities, normal);
+            /*final_color += cur_light.calc_spec(g_specular, cur_light.intensities, normal, cur_light.l_vec, spec_power);*/
         }
-        else {// no primitive intersection , add ambient light? 
-            *color = Vector3f(0, 0, 0); // cout << " BLACK!!" << endl;
-        }
+        *color = final_color;
+        // std::cout << " after  other lighting, final_color = " << std::endl << final_color << std::endl;
+
+        /*std::cout << " setting color to red!!" << std::endl;
+        *color = Vector3f(100, 0, 0);*/
+            // std::cout << "intersection: t = " << thit << " intersect point = ";
+            // intersect.print();
+            // std::cout << "normal = ";
+            // std::cout << std::endl;
     }
 };
 
