@@ -50,7 +50,7 @@ class Transformation
         void get_normal_matrix();
         void get_intersection_matrix();
         void add_transformation(TransformMatrix m) {transformations.push_back(m);};
-        void transform_ray(Ray& ray);
+        Ray transform_ray(Ray ray);
         void transform_intersection(Vector3f& intersect);
         void transform_normal(Vector3f& normal);
         void print();
