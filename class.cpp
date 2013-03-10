@@ -160,7 +160,7 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
 	for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
             Light& cur_light = **l_itr;
 	    // Check for shadows.
-	    Vector3f shadow_vector = cur_light.coordinates-ray.pos;
+	    Vector3f shadow_vector = ray.pos-cur_light.coordinates;
 	    Ray shadow_ray = Ray(ray.pos, shadow_vector, 0.0f, FLT_MAX);
 	    bool is_in_shadow = false;	    
 	    // If the shadow ray hits anything on the way back to the light, don't do any other light shading.
