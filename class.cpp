@@ -126,15 +126,17 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
     Vector3f closest_normal;
     float closest_distance = FLT_MAX;
 
-    Vector3f viewer_direction = ray.dir * -1;
+    Vector3f viewer_direction;
+    viewer_direction = ray.dir * -1;
     viewer_direction.normalize();
     // std::cout << " viewer_direction  = " <<std::endl << viewer_direction << std::endl;
 
     // loop through primitives and find closest intersection
     for(itr = primitives.begin(); itr != primitives.end(); ++itr) {
         Primitive& cur_prim = **itr;
-        cur_prim.transform.transform_ray(ray);
+        // cur_prim.transform.transform_ray(ray);
             // cur_prim.print();  
+        // primitive's intersect will transform the ray to do calculation, and return transformed back intersect point and normal
         if (cur_prim.intersect(ray, &thit, intersect, normal)) {
             // update closest primitive
             float distance = manhattan_distance(eye_pos, intersect);
@@ -147,18 +149,12 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
     }
 	
     if (closest_distance != FLT_MAX) {
-
-        // just for debugging
-        if (closest_primitive.emission == Vector3f(1, 1, 1)) {
-            std::cout << " found a white sphere!" << std::endl;
-        }
-
-
         // Compute ambient lighting
         Vector3f final_color = g_ambience;
 
         // add object's emission
         final_color = final_color + closest_primitive.emission;
+        // std::cout << " after ambience, final_color = " << std::endl << final_color <<std::endl;
         // std::cout << " final color with ambience = " << std::endl << final_color << std::endl;
 
 	for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
@@ -180,13 +176,22 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         }
 
         *color = final_color;
-        if (final_color(0) > 1 || final_color(1) > 1 || final_color(2) > 1) {
-            std::cout << " error, final_color = " << std::endl << final_color << std::endl;
-            final_color = Vector3f(1, 1, 1);
-        }
+        // if (final_color(0) >=1 || final_color(1) >=1 || final_color(2) >= 1) {
+        //     std::cout << " error, final_color = " << std::endl << final_color << std::endl;
+        // }
 
         // std::cout << " after  other lighting, color = " << std::endl << *color << std::endl;
         *color = final_color * 256;
+         if ((*color)(0) >=256) {
+            (*color)(0) = 255;
+         }
+         if ((*color)(1) >=256) {
+            (*color)(1) = 255;
+         }
+         if ((*color)(2) >= 255) {
+            (*color)(2) = 255;
+         }
+
         /*std::cout << " setting color to red!!" << std::endl;
         *color = Vector3f(100, 0, 0);*/
             // std::cout << "intersection: t = " << thit << " intersect point = ";
@@ -219,12 +224,20 @@ void Scene::render() {
 }
 
 bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& normal){
+    // do transformation
+    Ray transformed_ray = transform.transform_ray(ray);
+
+    // std::cout << " ray = " << std::endl;
+    // ray.print();
+    // std::cout <<" transformed_ray = " << std::endl;
+    // transformed_ray.print();
+
     // A = dir * dir
-    float A = ray.dir.dot(ray.dir);
+    float A = transformed_ray.dir.dot(transformed_ray.dir);
     // B = 2 dir * (pos - center)
-    float B = 2.0 * ray.dir.dot(ray.pos - center);
+    float B = 2.0 * transformed_ray.dir.dot(transformed_ray.pos - center);
     // C =  (pos - center) * (pos - center) - r^2
-    float C = (ray.pos - center).dot(ray.pos - center) - radius*radius;
+    float C = (transformed_ray.pos - center).dot(transformed_ray.pos - center) - radius*radius;
     // std::cout << " A = " << A << " B = " << B << " C = " << C << std::endl;
     if (discriminant(A, B, C) < 0) { // no intersection
         // std::cout <<  " No intersection " << std::endl << std::endl;
@@ -233,27 +246,42 @@ bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& nor
     // discriminant >=0,  ray is tangent or intersects in 2 pts
     float t = solve_quadratic(A, B, C);
     // Ri = [xi, yi, zi] = [x0 + xd * ti ,  y0 + yd * ti,  z0 + zd * ti]
-    intersect = ray.pos + ray.dir*t;
+    intersect = transformed_ray.pos + transformed_ray.dir*t;
     //Unit N at surface SN = [(xi - xc)/Sr,   (yi - yc)/Sr,   (zi - zc)/Sr]
     normal = (intersect - center)/radius;
     // std::cout << " intersect point = "<< intersect << " normal = "<< normal<< std::endl;
+    
+
+    //transform back to world coordinates
+    transform.transform_intersection(intersect);
+    transform.transform_normal(normal);
+
+
+
     return true;
 }; 
 
 // http://www.cs.washington.edu/education/courses/cse457/07sp/lectures/triangle_intersection.pdf
 
 bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& normal) {
+     // do transformation
+    Ray transformed_ray = transform.transform_ray(ray);
+    // std::cout << " ray = " << std::endl;
+    // ray.print();
+    // std::cout <<" transformed_ray = " << std::endl;
+    // transformed_ray.print();
+
     // plane: (P0 + P1t ) * n = A*n    
     // t = (A*n - P0*N)/P1*N
     float t;
     float d = N.dot(A);
-    if (N.dot(ray.dir) == 0) {
+    if (N.dot(transformed_ray.dir) == 0) {
         return false;
     } else {
-        t = (d - N.dot(ray.pos))/(N.dot(ray.dir));
+        t = (d - N.dot(transformed_ray.pos))/(N.dot(transformed_ray.dir));
     }
     // std::cout << "t calculated as: " << t << std::endl;
-    intersect = ray.pos + (t*ray.dir);
+    intersect = transformed_ray.pos + (t*transformed_ray.dir);
     
     if (((B-A).cross(intersect-A)).dot(N) < 0
         || ((C-B).cross(intersect-B)).dot(N) < 0
@@ -266,7 +294,13 @@ bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& no
     float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
 
     normal = N;
-    intersect = ray.pos + (ray.dir * t);
+    intersect = transformed_ray.pos + (ray.dir * t);
+
+
+    //transform back to world coordinates
+    transform.transform_intersection(intersect);
+    transform.transform_normal(normal);
+
     return true;
 }
 return false;

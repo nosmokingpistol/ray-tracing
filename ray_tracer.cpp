@@ -94,6 +94,7 @@ void Scene::loadScene(string file) {
         specular_stack.push_back(Vector3f(0, 0, 0)); // default 0 specular
         diffuse_stack.push_back(Vector3f(0, 0, 0)); // default 0 emission
         shiny_stack.push_back(0.0); // default 0 shininess;
+        g_ambience = Vector3f(0,0,0);
       }
 
       //sphere x y z radius
@@ -112,10 +113,10 @@ void Scene::loadScene(string file) {
     		raytracer.add_primitive(sphere);
 
 
-        cout<< " sphere emission = " <<endl << emission_stack.back() << endl;
-        cout<< " sphere specular = " <<endl << specular_stack.back() << endl;
-        cout<< " sphere diffuse = " <<endl << diffuse_stack.back() << endl;
-        cout<< " sphere shiny = " <<endl << shiny_stack.back() << endl;
+        // cout<< " sphere emission = " <<endl << emission_stack.back() << endl;
+        // cout<< " sphere specular = " <<endl << specular_stack.back() << endl;
+        // cout<< " sphere diffuse = " <<endl << diffuse_stack.back() << endl;
+        // cout<< " sphere shiny = " <<endl << shiny_stack.back() << endl;
 
       }
       //maxverts number

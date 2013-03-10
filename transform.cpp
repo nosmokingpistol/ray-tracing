@@ -157,7 +157,7 @@ void Transformation::print() {
     }
 }
 
-void Transformation::transform_ray(Ray& ray) {
+Ray Transformation::transform_ray(Ray ray) {
     // std::cout<< " transform ray!!!!!!!!!!!!!!!" << std::endl;
     // http://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html#SECTION00024100000000000000
     
@@ -172,6 +172,7 @@ void Transformation::transform_ray(Ray& ray) {
     Vector4f new_dir = transform_ray_dir*dir;
     ray.dir = convert_to_3d(new_dir);
     // std::cout << "after, ray dir = " << ray.dir << std::endl;
+    return ray;
 }
 void Transformation::transform_intersection(Vector3f& intersect) {
     Vector4f inter = convert_to_4d(intersect);
