@@ -116,7 +116,11 @@ void Camera::generateRay(Sample &sample, Ray* ray){
 }
 
 void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
-        // for each object, determine closet object of intersection
+    if (depth >= maxdepth) {
+        return;
+    }
+    // std::cout << " depth = " << depth << std::endl;
+    // for each object, determine closet object of intersection
     std::vector<Primitive*>::iterator itr;
     std::vector<Light*>::iterator l_itr;
     Vector3f normal;
@@ -124,13 +128,12 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
     float thit;
     Primitive closest_primitive; // only compute lighting for closest object
     Vector3f closest_normal;
+    Vector3f closest_intersect;
     float closest_distance = FLT_MAX;
 
     Vector3f viewer_direction;
     viewer_direction = ray.dir * -1;
     viewer_direction.normalize();
-    // std::cout << " viewer_direction  = " <<std::endl << viewer_direction << std::endl;
-
     // loop through primitives and find closest intersection
     for(itr = primitives.begin(); itr != primitives.end(); ++itr) {
         Primitive& cur_prim = **itr;
@@ -143,66 +146,69 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
             if (distance < closest_distance) {
                 closest_primitive = cur_prim;
                 closest_distance = distance;
-                closest_normal = normal;
+                closest_normal = Vector3f(normal(0), normal(1), normal(2));
+                closest_intersect = intersect;
             }
         }
     }
-	
     if (closest_distance != FLT_MAX) {
         // Compute ambient lighting
         Vector3f final_color = g_ambience;
-
         // add object's emission
         final_color = final_color + closest_primitive.emission;
-        // std::cout << " after ambience, final_color = " << std::endl << final_color <<std::endl;
-        // std::cout << " final color with ambience = " << std::endl << final_color << std::endl;
-
-	for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
+	    for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
             Light& cur_light = **l_itr;
-	    // Check for shadows.
-	    Vector3f shadow_vector = ray.pos-cur_light.coordinates;
-	    Ray shadow_ray = Ray(ray.pos, shadow_vector, 0.0f, FLT_MAX);
-	    bool is_in_shadow = false;	    
-	    // If the shadow ray hits anything on the way back to the light, don't do any other light shading.
-	    for (itr = primitives.begin(); itr < primitives.end(); ++itr) {
-                Primitive& p = **itr;
-	        is_in_shadow = p.intersect(shadow_ray, &thit, intersect, normal);
-	    }
-	    // Otherwise, continue to add the diffuse and specular components.
-	    if (!is_in_shadow) {
-            final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal);
-            final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
-	    }
+            if (!cur_light.is_directional()) { // point lights cast shadows
+        	    // Check for shadows.
+                Vector3f shadow_vector = closest_intersect-cur_light.coordinates;
+                // Vector3f shadow_vector = ray.pos-cur_light.coordinates;
+                shadow_vector.normalize();
+        	    Ray shadow_ray = Ray(ray.pos, shadow_vector, 0.0f, FLT_MAX);
+        	    bool is_in_shadow = false;	    
+        	    // If the shadow ray hits anything on the way back to the light, don't do any other light shading.
+        	    for (itr = primitives.begin(); itr < primitives.end(); ++itr) {
+                        Primitive& p = **itr;
+        	        is_in_shadow = p.intersect(shadow_ray, &thit, intersect, normal);
+        	    }
+        	    // Otherwise, continue to add the diffuse and specular components.
+        	    if (!is_in_shadow) {
+                    final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal);
+                    final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
+        	    }
+            }
+            else { // ignore shadow for directional lights
+                    final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal);
+                    final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
+            }
         }
+        if ( depth == 0) { // not a reflective ray
+            *color = final_color * 255;
+        }
+        else { // for reflective rays, modulate by specularity
+            Vector3f scaled_color(255 * pow(closest_primitive.specular(0), depth) * final_color(0),
+                            255 * pow(closest_primitive.specular(1), depth) * final_color(1),
+                            255 * pow(closest_primitive.specular(2), depth) * final_color(2));
+            *color = *color + scaled_color;
+            // std::cout << " adding specular  component of " << std::endl << scaled_color << std::endl;
 
-        *color = final_color;
-        // if (final_color(0) >=1 || final_color(1) >=1 || final_color(2) >= 1) {
-        //     std::cout << " error, final_color = " << std::endl << final_color << std::endl;
-        // }
-
-        // std::cout << " after  other lighting, color = " << std::endl << *color << std::endl;
-        *color = final_color * 256;
-         if ((*color)(0) >=256) {
-            (*color)(0) = 255;
-         }
-         if ((*color)(1) >=256) {
-            (*color)(1) = 255;
-         }
-         if ((*color)(2) >= 255) {
-            (*color)(2) = 255;
-         }
-
-        /*std::cout << " setting color to red!!" << std::endl;
-        *color = Vector3f(100, 0, 0);*/
-            // std::cout << "intersection: t = " << thit << " intersect point = ";
-            // intersect.print();
-            // std::cout << "normal = ";
-            // std::cout << std::endl;
+        }
+        // std::cout << " color = " << std::endl << *color << std::endl;
+         if ((*color)(0) >255) (*color)(0) = 255;
+         if ((*color)(1) >255) (*color)(1) = 255;
+         if ((*color)(2) >255) (*color)(2) = 255;
+        // if hit object has specularity, do reflection
+        if (closest_primitive.specular != Vector3f(0, 0, 0)) { // if specular, compute reflection
+            Vector3f reflection_dir = ray.dir - 2 * (ray.dir.dot(normal)) * normal;
+            reflection_dir.normalize();
+            Ray reflection_ray = Ray(closest_intersect, reflection_dir, 0.0f, FLT_MAX);
+            // std::cout << "  reflection_ray ray = " << std::endl; reflection_ray.print();
+            trace(reflection_ray, depth + 1, color);
+        }    
     }
-    else { // set color to black
-        *color = Vector3f(0, 0, 0);
-        // std::cout << " setting color to black" << std::endl;
-    }
+    else { // no intersection, add global ambience
+        // std::cout <<  " no intersection, depth = " << depth << std::endl;
+         *color = *color + g_ambience;
+    }          
 };
 
 
@@ -217,6 +223,7 @@ void Scene::render() {
     while (sampler.generateSample(&sample)) {
          // cout << "sample = " << sample.x << " " << sample.y << endl;
         camera.generateRay(sample, &ray);
+        color = Vector3f(0, 0, 0); // initialize color to black before recursive ray tracing
         raytracer.trace(ray, 0, &color);
         film.commit(sample, color);
     }
@@ -240,21 +247,20 @@ bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& nor
     float C = (transformed_ray.pos - center).dot(transformed_ray.pos - center) - radius*radius;
     // std::cout << " A = " << A << " B = " << B << " C = " << C << std::endl;
     if (discriminant(A, B, C) < 0) { // no intersection
-        // std::cout <<  " No intersection " << std::endl << std::endl;
         return false;
     }
     // discriminant >=0,  ray is tangent or intersects in 2 pts
     float t = solve_quadratic(A, B, C);
     // Ri = [xi, yi, zi] = [x0 + xd * ti ,  y0 + yd * ti,  z0 + zd * ti]
+
     intersect = transformed_ray.pos + transformed_ray.dir*t;
     //Unit N at surface SN = [(xi - xc)/Sr,   (yi - yc)/Sr,   (zi - zc)/Sr]
     normal = (intersect - center)/radius;
     normal.normalize();
     // std::cout << " intersect point = "<< intersect << " normal = "<< normal<< std::endl;
-    
-
     //transform back to world coordinates
     transform.transform_intersection(intersect);
+
     // intersect = ray.pos + ray.dir*t;
     transform.transform_normal(normal);
 

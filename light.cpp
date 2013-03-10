@@ -17,7 +17,7 @@ Vector3f Directional_Light::calc_diff(Vector3f diffuse, Vector3f intens, Vector3
 {
     l_vec = coordinates;
     Vector3f diff_values = diffuse.cwiseProduct(intens)*(std::max(0.0f, normal.dot(coordinates)));
-    std::cout << "****directional light diffuse = " << std::endl << diff_values << std::endl;
+    // std::cout << "****directional light diffuse = " << std::endl << diff_values << std::endl;
     return diff_values;
 };
 
@@ -27,7 +27,7 @@ Vector3f Point_Light::calc_diff (Vector3f diffuse, Vector3f intens, Vector3f nor
     l_vector.normalize();
     l_vec = l_vector; // save l for reflection
     Vector3f diff_values = diffuse.cwiseProduct(intens)*(std::max(0.0f, normal.dot(l_vector)));
-    std::cout << " ****point light diffuse = " << std::endl << diff_values << std::endl;
+    // std::cout << " ****point light diffuse = " << std::endl << diff_values << std::endl;
 
     return diff_values;
 };
@@ -38,13 +38,13 @@ Vector3f Light::calc_spec (Vector3f specular, Vector3f intens, Vector3f normal, 
     // Calculate reflection vector, 2(n*l)n - l
     Vector3f reflection = (2.0*l_vector.dot(normal)*normal) - l_vector;
     reflection.normalize();
-    std::cout << " specular reflection = " << std::endl << reflection << std::endl;
+    // std::cout << " specular reflection = " << std::endl << reflection << std::endl;
     float r_v = reflection.dot(viewer_direction);
     if (r_v  < 0) {
         return Vector3f(0, 0, 0);
     }
-    Vector3f spec_values = specular.cwiseProduct(intensities)*pow(std::max(0.0f, r_v), specular_power);
-    std::cout << " ****point light specular = " << std::endl << spec_values << std::endl;
+    Vector3f spec_values = specular.cwiseProduct(intens)*pow(r_v, specular_power);
+    // std::cout << " ****point light specular = " << std::endl << spec_values << std::endl;
     return spec_values;
 };
 

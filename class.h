@@ -155,9 +155,9 @@ class RayTracer
         std::vector<Primitive*> primitives;
 	    std::vector<Light*> lights;
         Vector3f eye_pos;
-
+        float maxdepth;
         int depth_threshold;
-        RayTracer() {}; // initialize vector
+        RayTracer() { maxdepth = 5;}; // initialize vector
         void add_primitive(Primitive *prim) {
             primitives.push_back(prim);
             // std::cout<< "added primitve" << std::endl;
@@ -169,6 +169,7 @@ class RayTracer
             // light->print();
         }
         void trace(Ray& ray, int depth, Vector3f* color);
+        void set_max_depth(float depth) { maxdepth = depth;};
 };
 
 

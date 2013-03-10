@@ -61,7 +61,7 @@ void Scene::loadScene(string file) {
       //maxdepth depth
       //  max # of bounces for ray (default 5)
       else if(!splitline[0].compare("maxdepth")) {
-        // maxdepth: atoi(splitline[1].c_str())
+       raytracer.set_max_depth(atoi(splitline[1].c_str()));
       }
       //output filename
       //  output file to write image to 
