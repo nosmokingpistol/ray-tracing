@@ -160,10 +160,23 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         // add object's emission
         final_color = final_color + closest_primitive.emission;
         // std::cout << " final color with ambience = " << std::endl << final_color << std::endl;
-        for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
+
+	for (l_itr = lights.begin(); l_itr != lights.end(); ++l_itr) {
             Light& cur_light = **l_itr;
+	    // Check for shadows.
+	    Vector3f shadow_vector = cur_light.coordinates-ray.pos;
+	    Ray shadow_ray = Ray(ray.pos, shadow_vector, 0.0f, FLT_MAX);
+	    bool is_in_shadow = false;	    
+	    // If the shadow ray hits anything on the way back to the light, don't do any other light shading.
+	    for (itr = primitives.begin(); itr < primitives.end(); ++itr) {
+                Primitive& p = **itr;
+	        is_in_shadow = p.intersect(shadow_ray, &thit, intersect, normal);
+	    }
+	    // Otherwise, continue to add the diffuse and specular components.
+	    if (!is_in_shadow) {
             final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, normal);
             final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
+	    }
         }
 
         *color = final_color;
