@@ -16,14 +16,14 @@ pushTransform
 	scale 1 2 1
 
 #scale into screen
-#	scale 1 1 2
+	scale 1 1 2
 
 # sphere scale test
 #sphere 0 0 -5 1
 
 #triangle scale test
 
-
+emission 1 1 1
 vertex -1 -1 -10 
 vertex +1 -1 -10
 vertex +1 +1 -10

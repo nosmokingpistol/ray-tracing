@@ -249,11 +249,13 @@ bool Sphere::intersect(Ray& ray, float* thit, Vector3f& intersect, Vector3f& nor
     intersect = transformed_ray.pos + transformed_ray.dir*t;
     //Unit N at surface SN = [(xi - xc)/Sr,   (yi - yc)/Sr,   (zi - zc)/Sr]
     normal = (intersect - center)/radius;
+    normal.normalize();
     // std::cout << " intersect point = "<< intersect << " normal = "<< normal<< std::endl;
     
 
     //transform back to world coordinates
     transform.transform_intersection(intersect);
+    // intersect = ray.pos + ray.dir*t;
     transform.transform_normal(normal);
 
 
@@ -288,21 +290,21 @@ bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& no
         || ((A-C).cross(intersect-C)).dot(N) < 0) {
         // std::cout <<  " No intersection " << std::endl;
     return false;
-} else {
-    float alpha = ((C-B).cross(intersect-B)).dot(N)/((B-A).cross(C-A)).dot(N);
-    float beta = ((A-C).cross(intersect-C)).dot(N)/((B-A).cross(C-A)).dot(N);
-    float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
+    } else {
+        float alpha = ((C-B).cross(intersect-B)).dot(N)/((B-A).cross(C-A)).dot(N);
+        float beta = ((A-C).cross(intersect-C)).dot(N)/((B-A).cross(C-A)).dot(N);
+        float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
 
-    normal = N;
-    intersect = transformed_ray.pos + (ray.dir * t);
+        normal = N;
+        intersect = transformed_ray.pos + (ray.dir * t);
 
 
-    //transform back to world coordinates
-    transform.transform_intersection(intersect);
-    transform.transform_normal(normal);
+        //transform back to world coordinates
+        transform.transform_intersection(intersect);
+        transform.transform_normal(normal);
 
-    return true;
-}
+        return true;
+    }
 return false;
 }
 
