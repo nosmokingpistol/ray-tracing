@@ -95,20 +95,22 @@ void TransformMatrix::print() {
 }
 
 void Transformation::initialize() {
+    get_intersection_matrix(); 
     transform_ray_origin_matrix();
     transform_ray_dir_matrix();
-    get_intersection_matrix(); 
     get_normal_matrix();
 }
 
 void Transformation::transform_ray_origin_matrix() {
         // returns inverse of all transformations in reverse order;
-    transform_ray_origin = identity_matrix();
-    for(std::vector<TransformMatrix>::reverse_iterator rit = transformations.rbegin();
-        rit != transformations.rend(); ++rit) {
-        TransformMatrix cur = *rit;
-    transform_ray_origin = transform_ray_origin * cur.inverse();
-}
+    transform_ray_origin = get_intersection;
+    transform_ray_origin = transform_ray_origin.inverse().eval();
+    // transform_ray_origin = identity_matrix();
+    // for(std::vector<TransformMatrix>::reverse_iterator rit = transformations.rbegin();
+    //     rit != transformations.rend(); ++rit) {
+    //     TransformMatrix cur = *rit;
+    // transform_ray_origin = transform_ray_origin * cur.inverse();
+    // }
 // std::cout << " transform ray origin matrix = " << std::endl;
 // std::cout << transform_ray_origin << std::endl;
 }
@@ -170,21 +172,32 @@ Ray Transformation::transform_ray(Ray ray) {
     // std::cout << "before, ray dir = " << ray.dir << std::endl;
     Vector4f dir = convert_to_4d(ray.dir);
     Vector4f new_dir = transform_ray_dir*dir;
+
+    /// need to normalize dir???
+    new_dir.normalize();
+    
     ray.dir = convert_to_3d(new_dir);
     // std::cout << "after, ray dir = " << ray.dir << std::endl;
     return ray;
 }
 void Transformation::transform_intersection(Vector3f& intersect) {
+    // std::cout << "transform_intersection , before =  " << std::endl << intersect << std::endl;
     Vector4f inter = convert_to_4d(intersect);
     Vector4f new_intersect = get_intersection*inter;
     intersect = convert_to_3d(new_intersect);
+    // std::cout << "           , after =  " << std::endl << intersect << std::endl;
     return;
 }
 
 void Transformation::transform_normal(Vector3f& normal) {
+    // std::cout << "transform_normal , before =  " << std::endl << normal << std::endl;
+
     Vector4f norm = convert_to_4d(normal);
     Vector4f new_normal = get_normal*norm;
     normal = convert_to_3d(new_normal);
+    normal.normalize();
+    // std::cout << "           , after =  " << std::endl << normal << std::endl;
+
     return;
 }
 
