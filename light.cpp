@@ -33,8 +33,12 @@ Vector3f Point_Light::calc_diff (Vector3f diffuse, Vector3f intens, Vector3f nor
 };
 
 Vector3f Light::calc_spec (Vector3f specular, Vector3f intens, Vector3f normal, Vector3f viewer_direction, Vector3f l_vector, float specular_power)
-{
-    Vector3f reflection = (-2.0*normal.dot(l_vector)*normal) + l_vector;
+{   l_vector.normalize();
+    viewer_direction.normalize();
+
+    // Calculate reflection vector, 2(n*l)n - l
+    Vector3f reflection = (2.0*normal.dot(l_vector)*normal) - l_vector;
+    reflection.normalize();
     std::cout << " specular reflection = " << std::endl << reflection << std::endl;
     float r_v = reflection.dot(viewer_direction);
     if (r_v  < 0) {

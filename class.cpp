@@ -170,8 +170,8 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
 	    }
 	    // Otherwise, continue to add the diffuse and specular components.
 	    if (!is_in_shadow) {
-            final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, normal);
-            final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
+            final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal);
+            final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
 	    }
         }
 
