@@ -179,6 +179,7 @@ class Scene
     public:
         float width, height;
         float maxdepth;
+        const char * fname;
         Camera camera;
         RayTracer raytracer;
         Scene() {

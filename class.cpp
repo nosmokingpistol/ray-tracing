@@ -217,7 +217,7 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
 void Scene::render() {
     Sampler sampler = Sampler(width, height);
     Sample sample;
-    Film film = Film("test1.png", width, height);
+    Film film = Film(fname, width, height);
     RGBQUAD image_color;
     Vector3f color;
     Ray ray;

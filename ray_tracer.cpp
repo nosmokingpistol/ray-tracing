@@ -15,7 +15,7 @@ using namespace std ;
 void Scene::loadScene(string file) {
 
   //store variables and set stuff at the end
-  std::string fname = "output.bmp";
+  fname = "output.bmp";
   vector<Vector3f> vertices;
   vector<Vector3f> emission_stack;
   vector<Vector3f> specular_stack;
@@ -66,7 +66,7 @@ void Scene::loadScene(string file) {
       //output filename
       //  output file to write image to 
       else if(!splitline[0].compare("output")) {
-        fname = splitline[1];
+        fname = splitline[1].c_str();
       }
 
       //camera lookfromx lookfromy lookfromz lookatx lookaty lookatz upx upy upz fov
