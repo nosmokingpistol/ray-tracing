@@ -160,11 +160,10 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
             Light& cur_light = **l_itr;
             if (!cur_light.is_directional()) { // point lights cast shadows
         	    // Check for shadows.
-                Vector3f shadow_vector = closest_intersect-cur_light.coordinates;
-                // Vector3f shadow_vector = ray.pos-cur_light.coordinates;
+                Vector3f shadow_vector = cur_lights.coordinates-closest_intersect;
                 shadow_vector.normalize();
-        	    Ray shadow_ray = Ray(ray.pos, shadow_vector, 0.0f, FLT_MAX);
-        	    bool is_in_shadow = false;	    
+        	Ray shadow_ray = Ray(closest_intersect, shadow_vector, 0.0f, FLT_MAX);
+        	bool is_in_shadow = false;	    
         	    // If the shadow ray hits anything on the way back to the light, don't do any other light shading.
         	    for (itr = primitives.begin(); itr < primitives.end(); ++itr) {
                         Primitive& p = **itr;
@@ -172,13 +171,13 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
         	    }
         	    // Otherwise, continue to add the diffuse and specular components.
         	    if (!is_in_shadow) {
-                    final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal);
+                    final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal, closest_intersect);
                     final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
         	    }
             }
             else { // ignore shadow for directional lights
-                    final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal);
-                    final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
+                final_color += cur_light.calc_diff(closest_primitive.diffuse, cur_light.intensities, closest_normal, closest_intersect);
+                final_color += cur_light.calc_spec(closest_primitive.specular, cur_light.intensities, closest_normal, viewer_direction, cur_light.l_vec, closest_primitive.shiny);
             }
         }
         if ( depth == 0) { // not a reflective ray
@@ -198,7 +197,9 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
          if ((*color)(2) >255) (*color)(2) = 255;
         // if hit object has specularity, do reflection
         if (closest_primitive.specular != Vector3f(0, 0, 0)) { // if specular, compute reflection
-            Vector3f reflection_dir = ray.dir - 2 * (ray.dir.dot(normal)) * normal;
+            Vector3f rd = ray.dir;
+            rd.normalize();
+            Vector3f reflection_dir = -rd + 2 * (rd.dot(normal)) * normal;
             reflection_dir.normalize();
             Ray reflection_ray = Ray(closest_intersect, reflection_dir, 0.0f, FLT_MAX);
             // std::cout << "  reflection_ray ray = " << std::endl; reflection_ray.print();
@@ -302,8 +303,6 @@ bool Triangle::intersect(Ray&ray, float* thit, Vector3f& intersect, Vector3f& no
         float gamma = ((B-A).cross(intersect-A)).dot(N)/((B-A).cross(C-A)).dot(N);
 
         normal = N;
-        intersect = transformed_ray.pos + (ray.dir * t);
-
 
         //transform back to world coordinates
         transform.transform_intersection(intersect);

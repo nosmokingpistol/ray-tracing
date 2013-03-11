@@ -13,7 +13,7 @@ Vector3f Light::calc_amb(Vector3f ambience, Vector3f intens)
 };
 
 
-Vector3f Directional_Light::calc_diff(Vector3f diffuse, Vector3f intens, Vector3f normal)
+Vector3f Directional_Light::calc_diff(Vector3f diffuse, Vector3f intens, Vector3f normal, Vector3f intersection)
 {
     l_vec = coordinates;
     Vector3f diff_values = diffuse.cwiseProduct(intens)*(std::max(0.0f, normal.dot(coordinates)));
@@ -21,9 +21,9 @@ Vector3f Directional_Light::calc_diff(Vector3f diffuse, Vector3f intens, Vector3
     return diff_values;
 };
 
-Vector3f Point_Light::calc_diff (Vector3f diffuse, Vector3f intens, Vector3f normal)
+Vector3f Point_Light::calc_diff (Vector3f diffuse, Vector3f intens, Vector3f normal, Vector3f intersection)
 {
-    Vector3f l_vector = coordinates-normal;
+    Vector3f l_vector = coordinates-intersection;
     l_vector.normalize();
     l_vec = l_vector; // save l for reflection
     Vector3f diff_values = diffuse.cwiseProduct(intens)*(std::max(0.0f, normal.dot(l_vector)));
@@ -34,7 +34,7 @@ Vector3f Point_Light::calc_diff (Vector3f diffuse, Vector3f intens, Vector3f nor
 
 Vector3f Light::calc_spec (Vector3f specular, Vector3f intens, Vector3f normal, Vector3f viewer_direction, Vector3f l_vector, float specular_power)
 {
-    normal.normalize();
+    //normal.normalize();
     // Calculate reflection vector, 2(n*l)n - l
     Vector3f reflection = (2.0*l_vector.dot(normal)*normal) - l_vector;
     reflection.normalize();
