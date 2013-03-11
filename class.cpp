@@ -160,7 +160,7 @@ void RayTracer::trace(Ray& ray, int depth, Vector3f* color) {
             Light& cur_light = **l_itr;
             if (!cur_light.is_directional()) { // point lights cast shadows
         	    // Check for shadows.
-                Vector3f shadow_vector = cur_lights.coordinates-closest_intersect;
+                Vector3f shadow_vector = cur_light.coordinates-closest_intersect;
                 shadow_vector.normalize();
         	Ray shadow_ray = Ray(closest_intersect, shadow_vector, 0.0f, FLT_MAX);
         	bool is_in_shadow = false;	    
